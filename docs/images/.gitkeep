@@ -1,8 +1,13 @@
 # Drop your README screenshots here (PNG). Filenames referenced by README.md:
-#   banner.png         — wide hero/banner (logo + tagline or a wide app shot)
-#   graph-3d.png       — the Immersive 3D semantic graph
-#   chat-charts.png    — chat with an inline Chart.js chart + code block
-#   studio-ide.png     — Cortex Studio IDE (Monaco + terminal + Copilot)
-#   deep-research.png  — Omni-Document / Deep Research studio
-#   cookbook.png       — Model Cookbook (hardware-aware model picker)
-#   architecture.png   — architecture diagram (optional; a mermaid block is also in the README)
+#   banner.png           — wide hero/banner (logo + tagline or a wide app shot)
+#   graph-3d.png         — the Immersive 3D semantic graph
+#   chat-charts.png      — chat answer with an inline Chart.js chart + code block
+#   studio-ide.png       — Cortex Studio IDE (Monaco + terminal + Copilot)
+#   document-studio.png  — the Quill document editor (grammar suggestions / ghost-text)
+#   deep-research.png     — Deep Research streaming a sourced report into a document
+#   generative.png       — Generative Studio (export menu / a generated PPT or PDF)
+#   memory-ledger.png    — Settings → Memory Ledger (view/add/delete memories)
+#   cookbook.png         — Model Cookbook (hardware-aware model picker)
+#
+# The architecture diagram is rendered as a live mermaid block in the README — no image needed.
+ge

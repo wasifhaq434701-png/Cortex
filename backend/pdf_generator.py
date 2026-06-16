@@ -76,7 +76,7 @@ def create_pdf_from_session(session_data: dict) -> io.BytesIO:
     {
         "projectName": "My Project",
         "sessionName": "Analysis Session",
-        "modelUsed": "local:qwen:27b",
+        "modelUsed": "local",
         "messages": [
             {
                 "narrative": "Analysis text here",

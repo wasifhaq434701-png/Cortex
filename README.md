@@ -1,9 +1,9 @@
 <div align="center">
 
 <!-- TODO: add image → docs/images/banner.png (wide hero banner: logo ✦ + "Cortex IDE") -->
-<img src="docs/images/banner.png" alt="Cortex IDE" width="100%" />
+<img src="docs/images/banner.png" alt="Cortex" width="100%" />
 
-# ✦ Cortex IDE
+# ✦ Cortex 
 
 ### A local-first AI Data Intelligence OS
 
@@ -22,7 +22,7 @@ Map your files, code, and databases into an interactive **3D knowledge graph**, 
 
 ## 📖 Overview
 
-**Cortex IDE** (formerly *Mind Palace*) is a privacy-first desktop application that turns any folder of files into a queryable, spatial knowledge base. It ingests your code, documents, and databases; embeds them into a per-project vector graph; and lets you explore, question, and generate from them — using **local models via Ollama / MLX** or **any cloud provider** through a single API-key box. Everything is processed and stored **on your machine**.
+**Cortex** is a privacy-first desktop application that turns any folder of files into a queryable, spatial knowledge base. It ingests your code, documents, and databases; embeds them into a per-project vector graph; and lets you explore, question, and generate from them — using **local models via Ollama / MLX** or **any cloud provider** through a single API-key box. Everything is processed and stored **on your machine**.
 
 **Why Cortex?**
 
@@ -57,14 +57,37 @@ A VS Code-style workspace powered by **Monaco**: multi-tab editing, a real **mul
 <!-- TODO: add image → docs/images/studio-ide.png (Monaco editor + terminal + Copilot panel) -->
 <img src="docs/images/studio-ide.png" alt="Cortex Studio IDE" width="100%" />
 
-### 📑 Omni-Document Studio & Deep Research
-A polymorphic editor opens code in Monaco and documents (`.md`/`.txt`/`.docx`) in a themed **Quill** rich-text editor, with Grammarly-style suggestions and AI ghost-text. The **Deep Research Hub** runs an autonomous agent — web search → page crawl → TF-IDF/KMeans topic analysis → LLM synthesis — streamed straight into your document. Export to **PDF / DOCX**, client- or server-side. All imported HTML is sanitized with **DOMPurify**.
+### 📑 Omni-Document Studio
+A polymorphic editor: code files open in **Monaco**, while documents (`.md` / `.txt` / `.docx`) open in a themed **Quill** rich-text editor — one workspace, the right editor per file. It adds **Grammarly-style grammar & style suggestions**, AI **ghost-text autocomplete** and a one-click **Continue** writer, plus open / save / export. All imported and AI-streamed HTML is sanitized with **DOMPurify**.
 
-<!-- TODO: add image → docs/images/deep-research.png (Document editor / Deep Research streaming) -->
-<img src="docs/images/deep-research.png" alt="Omni-Document & Deep Research" width="100%" />
+<!-- TODO: add image → docs/images/document-studio.png (the Quill document editor with grammar suggestions) -->
+<img src="docs/images/document-studio.png" alt="Omni-Document Studio" width="100%" />
+
+### 🔬 Deep Research Hub
+One click runs an **autonomous research agent**: web search → page crawl + readable-text extraction → **TF-IDF / KMeans** topic analysis → **LLM synthesis** — streamed straight into a new document over SSE (batched at 30 fps for smooth, jank-free writing). Turn a single question into a structured, sourced report without leaving the app.
+
+<!-- TODO: add image → docs/images/deep-research.png (Deep Research streaming into a document) -->
+<img src="docs/images/deep-research.png" alt="Deep Research Hub" width="100%" />
+
+### 📤 Generative Studio
+Turn any answer or dataset into a **native, downloadable artifact** — no copy-pasting:
+- **📄 PDF reports** (ReportLab / fpdf2) — export any chat response or analysis.
+- **📊 PPTX decks** (python-pptx) with auto-generated **matplotlib** charts.
+- **🗂️ CSV datasets** — synthesize or reshape tabular data with a column-count control.
+- **📝 DOCX documents** (python-docx) — both client-side (offline) and server-side.
+- Plus inline **Chart.js** charts & **Mermaid** diagrams rendered live in chat.
+
+<!-- TODO: add image → docs/images/generative.png (export menu / a generated PPT or PDF) -->
+<img src="docs/images/generative.png" alt="Generative Studio — PDF / PPTX / CSV / DOCX" width="100%" />
+
+### 🧠 Memory Ledger
+A persistent **mem0**-backed memory that lets the assistant **remember you across sessions** — your preferences, persona, and standing constraints are mined from chats and injected into future prompts. Fully under your control: **view, add, and delete** entries in **Settings → Memory Ledger**, or bulk-load facts via **Import Vault**. Stored locally and never uploaded.
+
+<!-- TODO: add image → docs/images/memory-ledger.png (Settings → Memory Ledger list) -->
+<img src="docs/images/memory-ledger.png" alt="Memory Ledger" width="100%" />
 
 ### 🍳 Model Cookbook & Utilities
-A hardware-aware **Model Cookbook** scans your RAM/VRAM and recommends one best-fit model per family, with one-click **install / update / delete** of Ollama models (no terminal). **Model Compare** runs blind A/B tests. A **Utilities** surface adds Notes & Tasks and draft-only Email & Calendar. A persistent **Memory Ledger** (mem0) lets the assistant remember your preferences across sessions.
+A hardware-aware **Model Cookbook** scans your RAM/VRAM and recommends one best-fit model per family, with one-click **install / update / delete** of Ollama models (no terminal). **Model Compare** runs blind A/B tests. A **Utilities** surface adds Notes & Tasks and draft-only Email & Calendar.
 
 <!-- TODO: add image → docs/images/cookbook.png (Model Cookbook with fit scores) -->
 <img src="docs/images/cookbook.png" alt="Hardware-aware Model Cookbook" width="100%" />
@@ -100,7 +123,7 @@ flowchart LR
     API --> Mem["mem0 Memory Ledger"]
 ```
 
-<!-- TODO (optional): add image → docs/images/architecture.png (a polished architecture diagram) -->
+<!-- The architecture is rendered as the live mermaid diagram above — no separate image needed. -->
 
 - **WebSocket channels:** `/api/brain/ws` (Copilot agent state machine), `/api/terminal/ws` (real PTY), `/api/dap/ws` (generic debug-adapter proxy).
 - **Storage** (local, git-ignored): `backend/storage/` — `cache.db` (diff cache), `chroma_db/` (GraphRAG vectors), `mem0_chroma/` + `mem0.db` (Memory Ledger).

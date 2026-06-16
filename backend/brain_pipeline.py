@@ -388,7 +388,7 @@ async def handle_brain_websocket(ws: WebSocket):
                 continue
 
             mode = data.get("interaction_mode", "ask")
-            model = data.get("model", "local:llama3.2")
+            model = data.get("model") or "local"  # ai_client resolves bare "local" to an installed model
             api_key = data.get("api_key", "")
             prompt = data.get("prompt", "")
             ui_context = data.get("ui_context", {})

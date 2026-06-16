@@ -738,7 +738,7 @@ async function sendCopilotMessage() {
         }
     }
     
-    const activeModel = document.getElementById('copilot-model-select') ? document.getElementById('copilot-model-select').value : 'local:llama3.2';
+    const activeModel = document.getElementById('copilot-model-select') ? document.getElementById('copilot-model-select').value : 'local';
     
     const cwd = document.getElementById('dir-input')?.value || "";
     const projectId = cwd ? cwd.replace(/[^a-zA-Z0-9-]/g, '_') : "default";

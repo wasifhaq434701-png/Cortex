@@ -50,7 +50,9 @@ def _resolve_model(model_name: str = None):
     return "llama3.2:latest"
 
 
-def _get_client(model_name: str = "llama3.2:latest"):
+def _get_client(model_name: str = None):
+    # Always resolve to a model the user actually has (never a hardcoded name).
+    model_name = _resolve_model(model_name)
     with _clients_lock:
         client = _clients.get(model_name)
         if client is None:
@@ -59,7 +61,7 @@ def _get_client(model_name: str = "llama3.2:latest"):
         return client
 
 
-def warmup_memory(model_name: str = "llama3.2:latest"):
+def warmup_memory(model_name: str = None):
     """Pre-build the default Memory client AND force its embedder's torch model to
     fully materialize on the calling (main) thread. mem0's HF embedder lazily
     moves the model off the `meta` device on the first embed call; if that first
@@ -104,7 +106,7 @@ def _get_dynamic_config(model_name: str = "llama3.2:latest"):
         }
     }
 
-def process_memory_extraction(user_query: str, ai_response: str, user_id: str = "default_user", active_model_name: str = "llama3.2:latest"):
+def process_memory_extraction(user_query: str, ai_response: str, user_id: str = "default_user", active_model_name: str = None):
     """
     Background hook to parse conversations and extract memory facts.
     Includes a Redundancy Guard to only invoke embedding if specific personal context keys are found.

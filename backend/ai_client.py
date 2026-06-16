@@ -8,6 +8,35 @@ from litellm import completion
 # Global cache to keep MLX models in unified memory between requests
 MLX_MODEL_CACHE = {}
 
+# Cache of the first installed Ollama model so a bare "local" provider resolves
+# to a model the user actually has — never a hardcoded name.
+_LOCAL_CACHE = {"name": None, "ts": 0.0}
+
+
+def _default_local_model():
+    """First installed Ollama model (cached ~30s). None if Ollama has none."""
+    import time
+    if _LOCAL_CACHE["name"] and time.time() - _LOCAL_CACHE["ts"] < 30:
+        return _LOCAL_CACHE["name"]
+    try:
+        r = requests.get("http://127.0.0.1:11434/api/tags", timeout=3)
+        names = [m["name"] for m in r.json().get("models", [])]
+        if names:
+            _LOCAL_CACHE.update(name=names[0], ts=time.time())
+            return names[0]
+    except Exception:
+        pass
+    return _LOCAL_CACHE["name"]
+
+
+def _resolve_local_name(provider: str):
+    """Map a local provider string to a concrete model name. An explicit
+    `local:<model>` wins; a bare `local`/`local:` resolves to the first installed
+    model. Returns None when nothing is installed (caller degrades cleanly)."""
+    if provider.startswith("local:") and provider[6:]:
+        return provider[6:]
+    return _default_local_model()
+
 
 def _apply_cloud_key(provider: str, api_key: str):
     """Set the provider's API key in the environment as a secondary fallback.
@@ -235,9 +264,13 @@ async def run_contextual_chat(question: str, context: str, provider: str = "loca
         # LOCAL OLLAMA ROUTING
         # ---------------------------------------------------------
         elif provider.startswith("local"):
-            model_name = provider[6:] if provider.startswith("local:") else "llama3.2"
+            model_name = _resolve_local_name(provider)
+            if not model_name:
+                yield ("System Alert: No local model is installed. Open the Model "
+                       "Cookbook to install one, or select a cloud provider.")
+                return
             allocated_timeout = calculate_dynamic_timeout(model_name)
-            
+
             url = "http://127.0.0.1:11434/api/generate"
             payload = {
                 "model": model_name,
@@ -334,9 +367,11 @@ def generate_cluster_titles(nodes_summary: str, provider: str = "local", api_key
                 return "Data Concept Cluster"
 
         elif provider.startswith("local"):
-            model_name = provider[6:] if provider.startswith("local:") else "llama3.2"
+            model_name = _resolve_local_name(provider)
+            if not model_name:
+                return "Data Concept Cluster"
             allocated_timeout = calculate_dynamic_timeout(model_name)
-            
+
             url = "http://127.0.0.1:11434/api/generate"
             payload = {"model": model_name, "prompt": prompt, "stream": False, "keep_alive": "30m"}
 
@@ -403,13 +438,14 @@ def generate_cluster_titles_batch(clusters: dict, provider: str = "local", api_k
 
         text = ""
         if provider.startswith("local") and not provider.startswith("local-mlx:"):
-            model_name = provider[6:] if provider.startswith("local:") else "llama3.2"
-            r = requests.post("http://127.0.0.1:11434/api/generate",
-                              json={"model": model_name, "prompt": prompt, "stream": False,
-                                    "keep_alive": "30m", "options": {"num_ctx": 4096}},
-                              timeout=timeout)
-            if r.status_code == 200:
-                text = r.json().get("response", "")
+            model_name = _resolve_local_name(provider)
+            if model_name:
+                r = requests.post("http://127.0.0.1:11434/api/generate",
+                                  json={"model": model_name, "prompt": prompt, "stream": False,
+                                        "keep_alive": "30m", "options": {"num_ctx": 4096}},
+                                  timeout=timeout)
+                if r.status_code == 200:
+                    text = r.json().get("response", "")
         else:
             # MLX / cloud: reuse the single-title path per cluster is too slow; just
             # use the cloud completion once.
