@@ -1,0 +1,1134 @@
+/* =========================================
+   Studio IDE Layout
+   ========================================= */
+.studio-main {
+    /* position:fixed + inset:0 pins to the VISUAL viewport, so the surface
+       fills the screen regardless of browser zoom or scroll offset (absolute
+       positioning was measured against a zoom-shifted parent → cornering). */
+    position: fixed;
+    inset: 0;
+    display: flex;
+    z-index: 30; /* above chat-main */
+    background: var(--bg-main);
+    /* By default, it's pushed out to the right */
+    transform: translateX(100%);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+    pointer-events: none;
+    opacity: 0;
+}
+
+/* The Cortex IDE surface only shows when surface-ide is active. */
+body.surface-ide .studio-main {
+    transform: translateX(0);
+    pointer-events: auto;
+    opacity: 1;
+}
+
+/* Documents Editor + Deep Research surfaces share the slide-in pattern,
+   each gated to its own body class so exactly one studio is visible. */
+.document-main, .research-main, .utilities-main {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    z-index: 30;
+    background: var(--bg-main);
+    transform: translateX(100%);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+    pointer-events: none;
+    opacity: 0;
+}
+body.surface-document .document-main,
+body.surface-research .research-main,
+body.surface-utilities .utilities-main {
+    transform: translateX(0);
+    pointer-events: auto;
+    opacity: 1;
+}
+
+body.studio-active .control-panel {
+    display: none !important;
+}
+
+body.studio-active .chat-main {
+    transform: translateX(-100%);
+    pointer-events: none;
+}
+
+body.studio-active .left-panel {
+    transform: translateX(-100%);
+    pointer-events: none;
+}
+
+/* =========================================
+   Studio Activity Bar
+   ========================================= */
+.studio-activity-bar {
+    width: 48px;
+    background: #111111; /* Very dark, matching standard activity bars */
+    border-right: 1px solid var(--glass-border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 10px;
+    z-index: 10;
+}
+
+.activity-btn {
+    width: 48px;
+    height: 48px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.4rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.activity-btn:hover {
+    color: var(--text-primary);
+}
+
+.activity-btn.exit-btn {
+    margin-top: auto;
+    margin-bottom: 10px;
+}
+
+/* =========================================
+   Studio Left Sidebar
+   ========================================= */
+.studio-sidebar {
+    width: 250px;
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--glass-border);
+    transition: width 0.2s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.studio-sidebar[style*="display: flex"] {
+    flex-direction: column !important;
+}
+
+.studio-sidebar.collapsed {
+    display: none !important;
+}
+
+.studio-sidebar-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.studio-tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    padding: 8px 0;
+    font-size: 0.75rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: 600;
+    border-bottom: 2px solid transparent;
+}
+
+.studio-tab.active {
+    color: var(--text-primary);
+    border-bottom: 2px solid var(--accent);
+}
+
+.studio-sidebar-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+/* =========================================
+   Studio Center (Editor & Bottom Panel)
+   ========================================= */
+.studio-center {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.studio-editor-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0; /* Important for flex child to shrink */
+}
+
+.studio-editor-header {
+    display: flex;
+    justify-content: space-between;
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.studio-editor-tabs {
+    display: flex;
+    overflow-x: auto;
+    flex: 1;
+}
+
+.studio-editor-tabs .file-tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    background: transparent;
+    border: none;
+    border-right: 1px solid var(--glass-border);
+    cursor: pointer;
+}
+
+.studio-editor-tabs .file-tab:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.studio-editor-tabs .file-tab.active {
+    background: var(--bg-main);
+    color: var(--text-primary);
+    border-top: 2px solid var(--accent);
+}
+
+.tab-close {
+    opacity: 0.5;
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+
+.tab-close:hover {
+    opacity: 1;
+    background: rgba(255,255,255,0.1);
+}
+
+.studio-editor-actions {
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    gap: 4px;
+}
+
+.studio-editor-actions button {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 4px;
+}
+
+.studio-editor-actions button:hover {
+    background: rgba(255,255,255,0.1);
+    color: var(--text-primary);
+}
+
+.studio-global-search {
+    display: flex;
+    gap: 10px;
+    padding: 8px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.studio-global-search input {
+    flex: 1;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--glass-border);
+    color: white;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+}
+
+.monaco-container {
+    flex: 1;
+    width: 100%;
+}
+
+/* Resizer */
+.studio-resizer-horizontal {
+    height: 4px;
+    background: var(--glass-border);
+    cursor: row-resize;
+    transition: background 0.2s;
+}
+
+.studio-resizer-horizontal:hover {
+    background: var(--accent);
+}
+
+.studio-resizer-vertical {
+    width: 4px;
+    background: var(--glass-border);
+    cursor: col-resize;
+    transition: background 0.2s;
+    z-index: 10;
+}
+
+.studio-resizer-vertical:hover {
+    background: var(--accent);
+}
+
+/* Bottom Panel */
+.studio-bottom-panel {
+    height: 250px;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--glass-border);
+}
+
+.studio-bottom-panel[style*="display: flex"] {
+    flex-direction: column !important;
+}
+
+.studio-bottom-panel.collapsed {
+    display: none !important;
+}
+
+.studio-bottom-tabs {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--glass-border);
+    background: var(--bg-secondary);
+    overflow: hidden;
+    min-width: 0;
+    z-index: 10;
+}
+
+.studio-bottom-tabs .studio-tab {
+    flex: 0 0 auto;
+    padding: 6px 16px;
+}
+
+.terminal-right-controls {
+    flex-shrink: 0;
+    white-space: nowrap;
+    margin-left: auto;
+}
+
+.terminal-right-controls > span {
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+
+.terminal-right-controls > span:hover {
+    background: var(--glass-border);
+    color: var(--text-primary) !important;
+}
+
+.studio-bottom-content {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+.studio-panel-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.studio-panel-content:not(.active) {
+    display: none; /* We can use display:none for these internal tabs to save DOM updates, unless we need to keep terminal alive. Actually, Xterm.js doesn't like display: none, so we should use visibility or positioning */
+}
+
+/* Special rule for Xterm to preserve state */
+#terminal-container:not(.active) {
+    display: block !important;
+    opacity: 0;
+    pointer-events: none;
+    z-index: -1;
+}
+
+#terminal-container {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 10px;
+    background: var(--bg-primary);
+}
+
+/* =========================================
+   Copilot Sidebar
+   ========================================= */
+.copilot-sidebar {
+    width: 350px;
+    background: rgba(10, 15, 30, 0.6); /* Dark navy glassmorphic */
+    backdrop-filter: blur(12px);
+    border-left: 1px solid var(--glass-border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    position: relative; /* anchor for the CLI-permission popup above the input */
+}
+
+.copilot-header {
+    padding: 12px;
+    border-bottom: 1px solid var(--glass-border);
+    display: flex;
+    align-items: center;
+}
+
+.tri-state-switcher {
+    display: flex;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: var(--radius-pill);
+    padding: 4px;
+    flex-grow: 1;
+}
+
+.tri-state-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 6px 0;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tri-state-btn.active {
+    background: rgba(56, 189, 248, 0.2);
+    color: var(--accent);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.copilot-chat-history {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.copilot-toolbar {
+    padding: 12px;
+    border-top: 1px solid var(--glass-border);
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.toolbar-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    width: 100%;
+}
+
+#copilot-model-select {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    outline: none;
+}
+
+.toolbar-input-area {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+#copilot-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+    padding: 10px;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    resize: none;
+    min-height: 40px;
+    max-height: 200px; /* Limit to 200px */
+    overflow-y: auto;
+    outline: none;
+    box-sizing: border-box;
+}
+
+#copilot-input:focus {
+    border-color: rgba(56, 189, 248, 0.5);
+}
+
+.toolbar-bottom-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.toolbar-actions-left {
+    display: flex;
+    gap: 6px;
+}
+
+.toolbar-actions-left button {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toolbar-actions-left button:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+#copilot-send-btn {
+    width: auto;
+    padding: 6px 16px;
+    background: var(--accent);
+    color: #000;
+    font-weight: 600;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+}
+
+/* Ports UI */
+#ports-list {
+    list-style: none;
+    padding: 10px;
+}
+#ports-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px;
+    background: rgba(255,255,255,0.05);
+    margin-bottom: 4px;
+    border-radius: 4px;
+}
+.port-link {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+/* Monaco Breakpoint */
+.breakpoint-glyph {
+    background-color: #e51400;
+    border-radius: 50%;
+    width: 10px !important;
+    height: 10px !important;
+    margin-top: 5px;
+    margin-left: 5px;
+}
+
+/* The OS menu bar belongs ONLY to the Cortex IDE — not the Documents Editor
+   or Deep Research surfaces. Scoping it to surface-ide also stops its
+   full-width hover-trigger from overlaying their "← Chat" back button. */
+body:not(.surface-ide) .os-menu-bar { display: none !important; }
+body.surface-ide .os-menu-bar {
+    /* Initially hide it, only show on hover of trigger or bar itself */
+    display: flex !important;
+    position: absolute;
+    top: -40px; /* Hide above */
+    left: 0;
+    right: 0;
+    height: 36px; /* Bigger for easier clicking */
+    background: #181818;
+    color: #ccc;
+    padding: 0 20px;
+    font-size: 14px;
+    align-items: center;
+    gap: 20px;
+    border-bottom: 1px solid #333;
+    z-index: 2000;
+    transition: top 0.2s ease;
+}
+
+.os-menu-trigger {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 28px; /* Hover zone — bigger target so the bar is easy to summon */
+    z-index: 1999;
+}
+
+/* The hover trigger is only meaningful in the Cortex IDE; outside it, it would
+   sit invisibly over the Documents Editor / Deep Research back button. */
+body:not(.surface-ide) .os-menu-trigger { display: none; pointer-events: none; }
+
+.os-menu-trigger:hover + .os-menu-bar,
+.os-menu-bar:hover,
+body.surface-ide .os-menu-bar.is-open {
+    top: 0; /* Slide down on hover, or held open by JS (grace delay / pin) */
+}
+
+.os-menu-item {
+    cursor: pointer;
+    position: relative;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.os-menu-item:hover {
+    color: #fff;
+}
+
+.os-menu-item.title {
+    font-weight: 700;
+    color: #fff;
+    margin-right: 10px;
+}
+
+/* Dropdown */
+.os-menu-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: #252526;
+    border: 1px solid #454545;
+    min-width: 200px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+    flex-direction: column;
+    padding: 4px 0;
+    z-index: 2001;
+}
+
+.os-menu-item.has-dropdown:hover .os-menu-dropdown {
+    display: flex;
+}
+
+.dropdown-item {
+    padding: 8px 16px;
+    color: #ccc;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.dropdown-item:hover {
+    background: #094771;
+    color: #fff;
+}
+
+.studio-center, .studio-editor-area {
+    background: #1e1e1e !important;
+}
+
+/* Monaco Editor Breakpoints */
+.breakpoint-glyph {
+    background-color: #e51400;
+    border-radius: 50%;
+    width: 10px !important;
+    height: 10px !important;
+    margin-top: 4px;
+    margin-left: 5px;
+}
+
+/* ==========================================================================
+   OS Menu Bar — enriched dropdown items (checkmarks, shortcuts, separators)
+   ========================================================================== */
+.os-menu-dropdown { min-width: 260px; }
+.os-menu-item.has-dropdown.force-closed .os-menu-dropdown { display: none !important; }
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px 6px 10px;
+    white-space: nowrap;
+}
+.dropdown-check { width: 14px; flex: 0 0 14px; font-size: 12px; color: #4ec9b0; text-align: center; }
+.dropdown-item.checked .dropdown-check::before { content: '✓'; }
+.dropdown-label { flex: 1 1 auto; }
+.dropdown-key { color: #8a8a8a; font-size: 11px; margin-left: 24px; }
+.dropdown-item:hover .dropdown-key { color: #cfe3ff; }
+.dropdown-sep { height: 1px; background: #3a3a3a; margin: 5px 8px; }
+
+/* ==========================================================================
+   Multi-terminal — tab strip + panes
+   ========================================================================== */
+#terminal-container.studio-panel-content.active { display: flex; flex-direction: column; }
+.term-tabbar {
+    display: none;
+    flex-wrap: wrap;
+    gap: 2px;
+    padding: 4px 6px 0 6px;
+    background: #181818;
+    border-bottom: 1px solid #2a2a2a;
+    flex: 0 0 auto;
+}
+.term-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #232323;
+    color: #bbb;
+    border: 1px solid transparent;
+    border-bottom: none;
+    border-radius: 5px 5px 0 0;
+    padding: 4px 10px;
+    font-size: 12px;
+    cursor: pointer;
+}
+.term-tab.active { background: #000; color: #fff; border-color: #333; }
+.term-tab-close { font-size: 13px; color: #888; line-height: 1; }
+.term-tab-close:hover { color: #fff; }
+.term-panes { flex: 1 1 auto; min-height: 0; display: flex; gap: 1px; background: #000; }
+.term-pane { min-width: 0; min-height: 0; height: 100%; overflow: hidden; }
+
+/* ==========================================================================
+   Dirty (unsaved) editor tab indicator
+   ========================================================================== */
+.file-tab.dirty .tab-close { color: #e0c060; font-size: 0.9rem; }
+.file-tab.dirty .tab-close:hover { color: #fff; }
+
+/* ==========================================================================
+   Toast notifications
+   ========================================================================== */
+#cortex-toast-host {
+    position: fixed;
+    bottom: 18px;
+    right: 18px;
+    z-index: 12000;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+}
+.cortex-toast {
+    background: #252526;
+    color: #eee;
+    border: 1px solid #3a3a3a;
+    border-left: 3px solid #4a9eff;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    max-width: 360px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.22s ease, transform 0.22s ease;
+}
+.cortex-toast.show { opacity: 1; transform: translateY(0); }
+.cortex-toast.success { border-left-color: #4ec9b0; }
+.cortex-toast.error { border-left-color: #f14c4c; }
+.cortex-toast.info { border-left-color: #4a9eff; }
+
+/* ==========================================================================
+   Quick Pick (command-palette-style chooser)
+   ========================================================================== */
+.cortex-quickpick-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 13000;
+    background: rgba(0,0,0,0.35);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+.cortex-quickpick {
+    margin-top: 90px;
+    width: 560px;
+    max-width: 90vw;
+    background: #252526;
+    border: 1px solid #454545;
+    border-radius: 8px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+    overflow: hidden;
+}
+.cortex-quickpick-input {
+    width: 100%;
+    box-sizing: border-box;
+    background: #3c3c3c;
+    color: #fff;
+    border: none;
+    border-bottom: 1px solid #454545;
+    padding: 12px 14px;
+    font-size: 14px;
+    outline: none;
+}
+.cortex-quickpick-list { max-height: 360px; overflow-y: auto; }
+.cortex-quickpick-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 14px;
+    cursor: pointer;
+    border-left: 2px solid transparent;
+}
+.cortex-quickpick-item.active, .cortex-quickpick-item:hover {
+    background: #094771;
+    border-left-color: #4a9eff;
+}
+.cortex-quickpick-item .qp-label { color: #fff; font-size: 13px; }
+.cortex-quickpick-item .qp-sub { color: #9aa0a6; font-size: 11px; font-family: monospace; }
+
+/* ===== Visual Debugger (debugger.js) ===== */
+#debug-toolbar {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 60;
+    display: flex;
+    gap: 2px;
+    background: #2d2d30;
+    border: 1px solid #454545;
+    border-radius: 6px;
+    padding: 3px 6px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+}
+#debug-toolbar.hidden { display: none; }
+#debug-toolbar button {
+    background: transparent;
+    border: none;
+    color: #d4d4d4;
+    font-size: 14px;
+    width: 28px;
+    height: 26px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+#debug-toolbar button:hover:not(:disabled) { background: #3e3e42; }
+#debug-toolbar button:disabled { color: #5a5a5a; cursor: default; }
+#debug-toolbar #dbg-continue { color: #89d185; }
+#debug-toolbar #dbg-stop { color: #f48771; }
+
+.debug-stopped-line { background: rgba(255, 204, 0, 0.12); }
+.debug-stopped-glyph {
+    width: 0 !important;
+    height: 0 !important;
+    border-left: 9px solid #ffcc00;
+    border-top: 6px solid transparent;
+    border-bottom: 6px solid transparent;
+    margin-left: 6px;
+    margin-top: 4px;
+}
+
+.debug-console-layout { display: flex; height: 100%; font-size: 12px; }
+.debug-console-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+#debug-console-output {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 12px;
+    font-family: Menlo, Monaco, "Courier New", monospace;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+#debug-console-output .dc-stderr { color: #f48771; }
+#debug-console-output .dc-console { color: #9aa0a6; }
+#debug-console-output .dc-stdout { color: #d4d4d4; }
+.debug-repl-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-top: 1px solid var(--glass-border);
+    padding: 4px 12px;
+}
+.debug-repl-prompt { color: #4a9eff; font-weight: bold; }
+#debug-repl-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #d4d4d4;
+    font-family: Menlo, Monaco, "Courier New", monospace;
+    font-size: 12px;
+    padding: 4px 0;
+}
+.debug-side-panes {
+    width: 280px;
+    flex-shrink: 0;
+    border-left: 1px solid var(--glass-border);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+.debug-side-title {
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    color: var(--text-muted, #9aa0a6);
+    padding: 6px 10px 2px;
+}
+#debug-variables, #debug-callstack { padding: 2px 0 8px; }
+.debug-empty { color: #5a5a5a; padding: 2px 10px; font-style: italic; }
+.debug-var-row {
+    display: flex;
+    gap: 6px;
+    padding: 2px 10px;
+    font-family: Menlo, Monaco, "Courier New", monospace;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.debug-var-name { color: #9cdcfe; flex-shrink: 0; }
+.debug-var-name::after { content: ' ='; color: #6a6a6a; }
+.debug-var-value { color: #ce9178; overflow: hidden; text-overflow: ellipsis; }
+.debug-frame-row {
+    padding: 2px 10px;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.debug-frame-row:hover { background: #2a2d2e; }
+.debug-frame-row.active { background: #094771; color: #fff; }
+
+/* ===== Agent header + mode pill (replaces tri-state tabs) ===== */
+.copilot-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+#copilot-mode-btn {
+    background: rgba(56, 189, 248, 0.12);
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    color: var(--accent);
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: var(--radius-pill, 999px);
+    cursor: pointer;
+    white-space: nowrap;
+}
+#copilot-mode-btn:hover { background: rgba(56, 189, 248, 0.22); }
+#copilot-mode-btn.mode-auto {
+    background: rgba(137, 209, 133, 0.12);
+    border-color: rgba(137, 209, 133, 0.4);
+    color: #89d185;
+}
+#copilot-mode-btn.mode-plan {
+    background: rgba(255, 204, 0, 0.1);
+    border-color: rgba(255, 204, 0, 0.4);
+    color: #ffcc00;
+}
+
+/* Mode pill must escape the 36px square toolbar-button sizing (the
+   .toolbar-actions-left button rule) or its text overlaps the mic button */
+#copilot-mode-btn {
+    width: auto !important;
+    height: 28px !important;
+    flex-shrink: 0;
+}
+
+/* Anchored agent-mode menu (opens above the pill) */
+#agent-mode-menu {
+    position: fixed;
+    z-index: 1000;
+    min-width: 220px;
+    background: #1f1f23;
+    border: 1px solid #3c3c41;
+    border-radius: 10px;
+    padding: 6px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+    font-size: 0.85rem;
+}
+.agent-mode-menu-header {
+    color: var(--text-muted, #9aa0a6);
+    font-size: 0.75rem;
+    padding: 6px 10px 8px;
+}
+.agent-mode-menu-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+    padding: 7px 10px;
+    border-radius: 6px;
+    color: var(--text-primary, #e8eaed);
+    cursor: pointer;
+}
+.agent-mode-menu-item:hover { background: rgba(255, 255, 255, 0.07); }
+.agent-mode-menu-item.active { color: #fff; }
+.agent-mode-check { color: var(--accent); font-weight: 700; width: 14px; text-align: right; }
+
+/* ===== "Switch to Studios" dropdown menu ===== */
+.studios-menu {
+    position: fixed;
+    z-index: 12000;
+    min-width: 260px;
+    background: #1b2236;
+    border: 1px solid var(--glass-border, rgba(255,255,255,0.12));
+    border-radius: 12px;
+    padding: 6px;
+    box-shadow: 0 12px 34px rgba(0,0,0,0.55);
+}
+.studios-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #e6e9f5;
+}
+.studios-menu-item:hover { background: rgba(255,255,255,0.07); }
+.studios-menu-item.active { background: rgba(56,189,248,0.14); }
+.studios-menu-item .sm-icon { font-size: 1.2rem; width: 26px; text-align: center; }
+.studios-menu-item .sm-text { display: flex; flex-direction: column; }
+.studios-menu-item .sm-label { font-weight: 600; font-size: 0.9rem; }
+.studios-menu-item .sm-sub { font-size: 0.72rem; color: #8b95b5; }
+
+/* ===== File-tree right-click context menu ===== */
+.file-ctx-menu {
+    position: fixed;
+    z-index: 13000;
+    min-width: 230px;
+    background: #1b2236;
+    border: 1px solid var(--glass-border, rgba(255,255,255,0.14));
+    border-radius: 10px;
+    padding: 5px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.55);
+    font-size: 0.82rem;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+.fcx-item { padding: 6px 12px; border-radius: 6px; color: #e6e9f5; cursor: pointer; white-space: nowrap; }
+.fcx-item:hover { background: rgba(255,255,255,0.08); }
+.fcx-item.danger { color: #f48771; }
+.fcx-item.danger:hover { background: rgba(244,135,113,0.15); }
+.fcx-item.disabled { color: #5a6485; cursor: default; }
+.fcx-item.disabled:hover { background: transparent; }
+.fcx-sep { height: 1px; background: var(--glass-border, rgba(255,255,255,0.1)); margin: 4px 6px; }
+
+/* ===== Image preview modal ===== */
+.img-preview-overlay {
+    position: fixed; inset: 0; z-index: 14000;
+    background: rgba(5,8,18,0.8); display: flex; align-items: center; justify-content: center; cursor: zoom-out;
+}
+.img-preview { max-width: 90vw; max-height: 90vh; text-align: center; }
+.img-preview-name { color: #cdd6f4; font-size: 0.85rem; margin-bottom: 10px; }
+.img-preview img { max-width: 90vw; max-height: 84vh; border-radius: 10px; box-shadow: 0 12px 40px rgba(0,0,0,0.6); background: #fff; }
+
+/* ===== Fullscreen-safe in-app modals (input / confirm) ===== */
+.cortex-modal-overlay {
+    position: fixed; inset: 0; z-index: 15000;
+    background: rgba(5,8,18,0.6); backdrop-filter: blur(5px);
+    display: flex; align-items: center; justify-content: center;
+}
+.cortex-modal {
+    width: 420px; max-width: 92vw;
+    background: #161c30; border: 1px solid var(--glass-border, rgba(255,255,255,0.14));
+    border-radius: 14px; padding: 22px 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    color: #e6e9f5;
+}
+.cortex-modal-title { font-size: 1rem; font-weight: 700; margin-bottom: 14px; }
+.cortex-modal-msg { font-size: 0.92rem; line-height: 1.6; margin-bottom: 18px; }
+.cortex-modal-input {
+    width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.3);
+    border: 1px solid var(--glass-border, rgba(255,255,255,0.14)); color: #fff;
+    border-radius: 9px; padding: 10px 12px; font-size: 0.9rem; margin-bottom: 16px;
+}
+.cortex-modal-input:focus { outline: none; border-color: var(--accent, #38bdf8); }
+.cortex-modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+.cortex-modal-actions button { border: none; border-radius: 8px; padding: 8px 16px; cursor: pointer; font-size: 0.85rem; }
+.cortex-modal-actions .cm-cancel { background: rgba(255,255,255,0.08); color: #cdd6f4; }
+.cortex-modal-actions .cm-ok { background: var(--accent, #38bdf8); color: #001018; font-weight: 700; }
+.cortex-modal-actions .cm-ok.danger { background: var(--danger, #f48771); color: #fff; }
+
+/* Git Source Control row buttons */
+.git-row-btn {
+    background: transparent; border: 1px solid var(--glass-border, rgba(255,255,255,0.14));
+    color: var(--text-secondary, #9aa0a6); border-radius: 4px; width: 22px; height: 22px;
+    line-height: 1; cursor: pointer; font-size: 13px; flex: 0 0 auto;
+}
+.git-row-btn:hover { border-color: var(--accent, #38bdf8); color: var(--accent, #38bdf8); }
+
+/* =========================================================================
+   LIGHT MODE — re-skin the IDE chrome (sidebars, tabs, headers, panels,
+   copilot, menus, modals). The Monaco editor + xterm terminal keep their own
+   JS-driven themes. Driven by the shared light vars on <html data-theme=light>.
+   ========================================================================= */
+[data-theme="light"] .studio-main,
+[data-theme="light"] .document-main,
+[data-theme="light"] .research-main,
+[data-theme="light"] .utilities-main { background: var(--bg-main); color: var(--text-primary); }
+
+[data-theme="light"] .studio-activity-bar { background: #e9e9ee; border-right: 1px solid var(--glass-border); }
+[data-theme="light"] .activity-btn { color: var(--text-secondary); }
+[data-theme="light"] .activity-btn:hover,
+[data-theme="light"] .activity-btn.active { color: var(--accent); }
+
+[data-theme="light"] .studio-sidebar,
+[data-theme="light"] .copilot-sidebar { background: #f3f3f6; color: var(--text-primary); border-color: var(--glass-border); }
+[data-theme="light"] .studio-sidebar-tabs,
+[data-theme="light"] .studio-bottom-tabs,
+[data-theme="light"] .copilot-header,
+[data-theme="light"] .copilot-toolbar { background: #ececf1; border-color: var(--glass-border); color: var(--text-primary); }
+[data-theme="light"] .studio-tab { color: var(--text-secondary); }
+[data-theme="light"] .studio-tab.active { color: var(--text-primary); border-bottom-color: var(--accent); }
+[data-theme="light"] .studio-sidebar-content { color: var(--text-primary); }
+
+[data-theme="light"] .studio-editor-header,
+[data-theme="light"] .studio-editor-tabs { background: #ececf1; border-color: var(--glass-border); }
+[data-theme="light"] .studio-editor-tabs .file-tab { background: #e2e2e8; color: var(--text-secondary); border-color: var(--glass-border); }
+[data-theme="light"] .studio-editor-tabs .file-tab:hover { background: #d8d8df; }
+[data-theme="light"] .studio-editor-tabs .file-tab.active { background: var(--bg-secondary); color: var(--text-primary); }
+
+[data-theme="light"] .studio-bottom-panel,
+[data-theme="light"] .studio-bottom-content,
+[data-theme="light"] .studio-panel-content { background: var(--bg-secondary); color: var(--text-primary); }
+[data-theme="light"] .terminal-right-controls > span { color: var(--text-secondary); }
+[data-theme="light"] .terminal-right-controls > span:hover { color: var(--accent); }
+
+[data-theme="light"] .copilot-chat-history { color: var(--text-primary); }
+[data-theme="light"] #copilot-model-select { background: var(--bg-input); color: var(--text-primary); border-color: var(--glass-border); }
+[data-theme="light"] .studio-global-search input,
+[data-theme="light"] .studio-editor-actions button { background: var(--bg-input); color: var(--text-primary); border-color: var(--glass-border); }
+
+/* Floating menus / dropdowns / toasts / quickpick built with dark literals */
+[data-theme="light"] .dropdown-menu,
+[data-theme="light"] .cortex-quickpick,
+[data-theme="light"] .cortex-modal { background: var(--bg-secondary); border-color: var(--glass-border); color: var(--text-primary); }
+[data-theme="light"] .dropdown-item:hover,
+[data-theme="light"] .cortex-quickpick-item.active { background: var(--accent-glow); }
+[data-theme="light"] .dropdown-key { color: var(--text-muted); }
+[data-theme="light"] .cortex-modal-input { background: var(--bg-input); color: var(--text-primary); }
+[data-theme="light"] .cortex-modal-actions .cm-cancel { background: var(--bg-input); color: var(--text-primary); }
+[data-theme="light"] .git-row-btn { color: var(--text-secondary); }
+
+/* ===================== IDE Welcome screen ===================== */
+/* Overlay the editor area absolutely so it fills regardless of flex sizing
+   (hiding the monaco row collapsed the column to 0 width). */
+.studio-editor-area { position: relative; }
+.ide-welcome {
+    position: absolute; inset: 0; z-index: 6; overflow-y: auto;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg-main, #0d1117);
+}
+.ide-welcome.hidden { display: none; }
+.ide-welcome-inner { max-width: 640px; width: 100%; padding: 40px; }
+.ide-welcome-logo { font-size: 3rem; color: var(--accent, #38bdf8); }
+.ide-welcome-title { margin: 10px 0 2px; font-size: 2rem; color: var(--text-primary, #fff); }
+.ide-welcome-sub { margin: 0 0 28px; color: var(--text-secondary, #9aa4c0); font-size: 0.95rem; }
+.ide-welcome-cols { display: flex; gap: 48px; flex-wrap: wrap; }
+.ide-welcome-col { min-width: 220px; }
+.ide-welcome-col h3 { margin: 0 0 10px; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted, #6b7280); }
+.ide-welcome-link {
+    display: block; padding: 6px 0; color: var(--accent, #38bdf8); cursor: pointer;
+    font-size: 0.92rem; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ide-welcome-link:hover { text-decoration: underline; filter: brightness(1.15); }
+.ide-welcome-empty { color: var(--text-muted, #6b7280); font-size: 0.85rem; }

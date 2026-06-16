@@ -1,0 +1,195 @@
+/* ==========================================================================
+   Phase 7+ — Documents Editor + Deep Research surfaces (docstudio.js)
+   Dark-navy glassmorphism, themed to match the Cortex palette.
+   ========================================================================== */
+
+/* ---- Documents Editor surface ---- */
+.document-main { color: #e6e9f5; }
+
+.doc-topbar {
+    position: relative;
+    z-index: 2100;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--glass-border, rgba(255,255,255,0.1));
+    background: rgba(255,255,255,0.03);
+    backdrop-filter: blur(8px);
+    flex-wrap: wrap;
+}
+.doc-back, .research-back {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--glass-border, rgba(255,255,255,0.12));
+    color: #cdd6f4; border-radius: 8px; padding: 5px 10px; cursor: pointer; font-size: 0.8rem;
+}
+.doc-back:hover { background: rgba(255,255,255,0.12); }
+.doc-title-input {
+    background: transparent; border: 1px solid transparent; color: #fff;
+    font-size: 0.95rem; font-weight: 600; padding: 5px 8px; border-radius: 6px; min-width: 180px;
+}
+.doc-title-input:hover, .doc-title-input:focus { border-color: var(--glass-border, rgba(255,255,255,0.15)); outline: none; }
+.doc-topbar-actions { display: flex; align-items: center; gap: 6px; margin-left: auto; flex-wrap: wrap; }
+.doc-btn {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--glass-border, rgba(255,255,255,0.1));
+    color: #d7def0; border-radius: 7px; padding: 5px 10px; cursor: pointer; font-size: 0.78rem; white-space: nowrap;
+}
+.doc-btn:hover { background: rgba(56,189,248,0.16); border-color: rgba(56,189,248,0.4); color: #fff; }
+.doc-toggle { color: #89d185; }
+.doc-sep { width: 1px; height: 22px; background: var(--glass-border, rgba(255,255,255,0.12)); margin: 0 4px; }
+
+.doc-editor-wrap { flex: 1; position: relative; min-height: 0; display: flex; flex-direction: column; }
+#docstudio-editor { flex: 1; overflow: hidden; }
+.document-main .ql-toolbar.ql-snow {
+    border: none; border-bottom: 1px solid var(--glass-border, rgba(255,255,255,0.1));
+    background: rgba(255,255,255,0.02);
+}
+.document-main .ql-snow .ql-stroke { stroke: #9aa4c0; }
+.document-main .ql-snow .ql-fill { fill: #9aa4c0; }
+.document-main .ql-snow .ql-picker { color: #c7cfe6; }
+.document-main .ql-container.ql-snow { border: none; }
+.document-main .ql-editor {
+    color: #e6e9f5; line-height: 1.8; font-size: 16px;
+    padding: 36px 48px; max-width: 880px; margin: 0 auto; width: 100%;
+}
+.document-main .ql-editor.ql-blank::before { color: #5a6485; font-style: normal; }
+.document-main .ql-editor h1, .document-main .ql-editor h2, .document-main .ql-editor h3 { color: #fff; }
+.document-main .ql-editor a { color: var(--accent, #38bdf8); }
+
+.doc-statusbar { padding: 4px 14px; font-size: 0.72rem; color: #8b95b5; border-top: 1px solid var(--glass-border, rgba(255,255,255,0.08)); }
+.doc-statusbar.busy { color: var(--accent, #38bdf8); }
+
+/* grammar suggestion underline */
+.doc-suggest { border-bottom: 2px dotted #f0a85a; cursor: pointer; background: rgba(240,168,90,0.08); }
+.doc-suggest-popover {
+    position: fixed; z-index: 13000; max-width: 320px;
+    background: #1b2236; border: 1px solid var(--glass-border, rgba(255,255,255,0.14));
+    border-radius: 10px; padding: 10px 12px; box-shadow: 0 10px 28px rgba(0,0,0,0.5); font-size: 0.8rem;
+}
+.dsp-reason { color: #8b95b5; margin-bottom: 6px; }
+.dsp-change { margin-bottom: 8px; }
+.dsp-old { color: #f48771; text-decoration: line-through; }
+.dsp-new { color: #89d185; }
+.dsp-actions { display: flex; gap: 8px; }
+.dsp-actions button { border: none; border-radius: 6px; padding: 4px 12px; cursor: pointer; font-size: 0.75rem; }
+.dsp-accept { background: var(--accent, #38bdf8); color: #001018; font-weight: 600; }
+.dsp-dismiss { background: rgba(255,255,255,0.08); color: #cdd6f4; }
+
+/* ghost-text completion overlay */
+.docstudio-ghost {
+    position: fixed; z-index: 35; pointer-events: none;
+    color: rgba(180,190,220,0.45); font-size: 16px; line-height: 1.8;
+    white-space: pre-wrap; font-family: inherit;
+}
+.docstudio-ghost::after { content: '  ⇥ Tab'; font-size: 0.6rem; color: rgba(56,189,248,0.6); }
+.docstudio-ghost.hidden { display: none; }
+
+/* intent modal */
+.doc-intent-overlay {
+    position: fixed; inset: 0; z-index: 14000;
+    background: rgba(5,8,18,0.6); backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center;
+}
+.doc-intent {
+    width: 560px; max-width: 92vw;
+    background: #161c30; border: 1px solid var(--glass-border, rgba(255,255,255,0.12));
+    border-radius: 16px; padding: 26px 28px; box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+}
+.doc-intent h2 { margin: 0 0 4px; color: #fff; }
+.doc-intent-sub { margin: 0 0 16px; color: #8b95b5; font-size: 0.85rem; }
+.doc-intent-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.doc-chip {
+    background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border, rgba(255,255,255,0.12));
+    color: #cdd6f4; border-radius: 999px; padding: 6px 14px; cursor: pointer; font-size: 0.8rem;
+}
+.doc-chip:hover { background: rgba(255,255,255,0.1); }
+.doc-chip.active { background: rgba(56,189,248,0.18); border-color: var(--accent, #38bdf8); color: #fff; }
+#doc-intent-topic {
+    width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.3);
+    border: 1px solid var(--glass-border, rgba(255,255,255,0.12)); color: #fff;
+    border-radius: 10px; padding: 10px 12px; font-size: 0.9rem; margin-bottom: 16px;
+}
+.doc-intent-actions { display: flex; gap: 10px; justify-content: flex-end; }
+.doc-intent-actions button { border: none; border-radius: 9px; padding: 9px 16px; cursor: pointer; font-size: 0.85rem; }
+.doc-intent-skip { background: rgba(255,255,255,0.07); color: #cdd6f4; }
+.doc-intent-save { background: rgba(255,255,255,0.12); color: #fff; }
+.doc-intent-draft { background: var(--accent, #38bdf8); color: #001018; font-weight: 700; }
+
+/* ---- Deep Research surface ---- */
+.research-main { align-items: center; justify-content: center; overflow-y: auto; }
+/* flex-start + overflow lets the user scroll to the top (back button) and
+   bottom (recent) when the content is taller than the viewport. */
+.research-screen { width: 100%; min-height: 100%; display: flex; align-items: flex-start; justify-content: center; padding: 56px 24px 40px; box-sizing: border-box; overflow-y: auto; }
+.research-hero { width: 720px; max-width: 92vw; position: relative; }
+.research-back { position: absolute; top: -10px; left: 0; z-index: 2100; }
+.research-hero h1 { font-size: 2rem; margin: 28px 0 8px; color: #fff; }
+.research-sub { color: #8b95b5; margin: 0 0 22px; font-size: 0.95rem; line-height: 1.6; }
+#research-query, .research-input {
+    width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.3);
+    border: 1px solid var(--glass-border, rgba(255,255,255,0.14)); color: #fff;
+    border-radius: 14px; padding: 16px 18px; font-size: 1.05rem; resize: vertical;
+}
+.research-input { font-size: 0.95rem; padding: 12px 16px; margin-bottom: 12px; }
+#research-query:focus, .research-input:focus { outline: none; border-color: var(--accent, #38bdf8); }
+.research-controls { display: flex; align-items: center; gap: 16px; margin-top: 16px; }
+.research-controls label { color: #cdd6f4; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
+.research-controls select {
+    background: #161c30; color: #fff; border: 1px solid var(--glass-border, rgba(255,255,255,0.14));
+    border-radius: 8px; padding: 6px 10px;
+}
+.research-run-btn {
+    margin-left: auto; background: var(--accent, #38bdf8); color: #001018; font-weight: 700;
+    border: none; border-radius: 12px; padding: 12px 22px; cursor: pointer; font-size: 0.95rem;
+}
+.research-run-btn:hover { filter: brightness(1.1); }
+.research-recent { margin-top: 22px; }
+.rr-title { color: #5a6485; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+.rr-chip {
+    background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border, rgba(255,255,255,0.1));
+    color: #aab4d4; border-radius: 999px; padding: 5px 12px; margin: 0 8px 8px 0; cursor: pointer; font-size: 0.78rem;
+}
+.rr-chip:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+/* ===================== LIGHT MODE — Documents + Research ===================== */
+[data-theme="light"] .document-main,
+[data-theme="light"] .research-main { background: var(--bg-main); color: var(--text-primary); }
+[data-theme="light"] .doc-topbar,
+[data-theme="light"] .research-topbar { background: var(--bg-secondary); border-color: var(--glass-border); }
+[data-theme="light"] .doc-title-input { color: var(--text-primary); }
+[data-theme="light"] .doc-back, [data-theme="light"] .research-back,
+[data-theme="light"] .doc-btn { color: var(--text-secondary); border-color: var(--glass-border); }
+[data-theme="light"] .doc-back:hover, [data-theme="light"] .doc-btn:hover { background: var(--accent-glow); color: var(--text-primary); }
+[data-theme="light"] .document-main .ql-toolbar.ql-snow { background: var(--bg-secondary); border-color: var(--glass-border); }
+[data-theme="light"] .document-main .ql-snow .ql-stroke { stroke: var(--text-secondary); }
+[data-theme="light"] .document-main .ql-snow .ql-fill { fill: var(--text-secondary); }
+[data-theme="light"] .document-main .ql-snow .ql-picker { color: var(--text-primary); }
+[data-theme="light"] .document-main .ql-editor { background: var(--bg-secondary); color: var(--text-primary); }
+[data-theme="light"] .document-main .ql-editor h1,
+[data-theme="light"] .document-main .ql-editor h2,
+[data-theme="light"] .document-main .ql-editor h3 { color: var(--text-primary); }
+[data-theme="light"] .document-main .ql-editor.ql-blank::before { color: var(--text-muted); }
+[data-theme="light"] .doc-statusbar { color: var(--text-secondary); border-color: var(--glass-border); }
+[data-theme="light"] .doc-intent,
+[data-theme="light"] .doc-suggest-popover { background: var(--bg-secondary); color: var(--text-primary); border-color: var(--glass-border); }
+[data-theme="light"] .doc-intent h2 { color: var(--text-primary); }
+[data-theme="light"] .dsp-dismiss { background: var(--bg-input); color: var(--text-primary); }
+[data-theme="light"] .rr-chip { color: var(--text-secondary); }
+[data-theme="light"] .rr-chip:hover { background: var(--accent-glow); color: var(--text-primary); }
+/* Document intent overlay ("context window" where the user describes the doc) */
+[data-theme="light"] .doc-intent { background: var(--bg-secondary); color: var(--text-primary); }
+[data-theme="light"] .doc-intent-sub { color: var(--text-secondary); }
+[data-theme="light"] .doc-chip { color: var(--text-primary); }
+[data-theme="light"] .doc-chip.active { color: var(--text-primary); }
+[data-theme="light"] .doc-intent-input,
+[data-theme="light"] .doc-intent textarea,
+[data-theme="light"] .doc-intent input { background: var(--bg-input); color: var(--text-primary); border-color: var(--glass-border); }
+[data-theme="light"] .doc-intent-skip,
+[data-theme="light"] .doc-intent-save { background: var(--bg-input); color: var(--text-primary); }
+/* Deep Research hero / query screen */
+[data-theme="light"] .research-hero h1 { color: var(--text-primary); }
+[data-theme="light"] .research-sub { color: var(--text-secondary); }
+[data-theme="light"] .research-input { background: var(--bg-input); color: var(--text-primary); border-color: var(--glass-border); }
+[data-theme="light"] .research-controls label { color: var(--text-secondary); }
+[data-theme="light"] .research-controls select { background: var(--bg-input); color: var(--text-primary); border-color: var(--glass-border); }
+[data-theme="light"] .rr-title { color: var(--text-muted); }

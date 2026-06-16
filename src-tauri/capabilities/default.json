@@ -1,0 +1,15 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Core window access plus permission to spawn the bundled backend sidecar.",
+  "windows": ["main", "*"],
+  "permissions": [
+    "core:default",
+    "shell:allow-execute",
+    "shell:allow-spawn",
+    {
+      "identifier": "shell:allow-execute",
+      "allow": [{ "name": "cortex-backend", "sidecar": true }]
+    }
+  ]
+}

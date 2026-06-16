@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cortex IDE — starting…</title>
+  <style>
+    html,body{height:100%;margin:0;background:#0b1020;color:#e6e9f5;font-family:Inter,system-ui,sans-serif;}
+    .wrap{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;}
+    .logo{font-size:1.4rem;font-weight:800;letter-spacing:.04em;}
+    .spinner{width:34px;height:34px;border:3px solid rgba(255,255,255,.15);border-top-color:#38bdf8;border-radius:50%;animation:spin .8s linear infinite;}
+    .msg{color:#8b95b5;font-size:.85rem;}
+    @keyframes spin{to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="logo">🧠 Cortex IDE</div>
+    <div class="spinner"></div>
+    <div class="msg" id="msg">Starting local engine…</div>
+  </div>
+  <script>
+    // The Tauri shell spawns the bundled backend sidecar; poll until it answers,
+    // then hand the webview over to the live app. Zero terminal interaction.
+    const PORT = 8077;
+    const url = `http://127.0.0.1:${PORT}/`;
+    let tries = 0;
+    async function poll() {
+      tries++;
+      try {
+        const r = await fetch(url, { cache: 'no-store' });
+        if (r.ok) { location.href = url; return; }
+      } catch (e) { /* not up yet */ }
+      if (tries > 120) { document.getElementById('msg').textContent = 'Engine is taking longer than expected…'; }
+      setTimeout(poll, 500);
+    }
+    poll();
+  </script>
+</body>
+</html>

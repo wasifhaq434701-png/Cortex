@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cortex Terminal</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@4.13.0/css/xterm.css" />
+    <script src="https://cdn.jsdelivr.net/npm/xterm@4.13.0/lib/xterm.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.5.0/lib/xterm-addon-fit.js"></script>
+    <style>
+        html, body { margin: 0; height: 100%; background: #000; }
+        #term { position: absolute; inset: 0; padding: 6px; }
+    </style>
+</head>
+<body>
+    <div id="term"></div>
+    <script>
+        (function () {
+            const params = new URLSearchParams(location.search);
+            const cwd = params.get('cwd') || '';
+            const term = new Terminal({
+                theme: { background: '#000000' },
+                fontFamily: 'Menlo, Monaco, "Courier New", monospace',
+                fontSize: 13,
+                cursorBlink: true
+            });
+            let fit;
+            if (window.FitAddon && window.FitAddon.FitAddon) {
+                fit = new window.FitAddon.FitAddon();
+                term.loadAddon(fit);
+            }
+            term.open(document.getElementById('term'));
+            if (fit) setTimeout(() => fit.fit(), 100);
+
+            const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            let url = `${proto}//${location.host}/api/terminal/ws`;
+            if (cwd) url += `?cwd=${encodeURIComponent(cwd)}`;
+            const ws = new WebSocket(url);
+
+            ws.onopen = () => {
+                term.write('\r\n*** Connected to local shell ***\r\n');
+                ws.send(JSON.stringify({ type: 'resize', cols: term.cols || 80, rows: term.rows || 24 }));
+                ws.send(JSON.stringify({ type: 'input', data: '\r' }));
+            };
+            ws.onmessage = (e) => term.write(e.data);
+            ws.onclose = (e) => term.write(`\r\n*** Shell disconnected (${e.code}) ***\r\n`);
+
+            term.onData(d => { if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'input', data: d })); });
+            term.onResize(s => { if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'resize', cols: s.cols, rows: s.rows })); });
+            window.addEventListener('resize', () => fit && fit.fit());
+            window.addEventListener('beforeunload', () => { try { ws.close(); } catch (e) {} });
+        })();
+    </script>
+</body>
+</html>

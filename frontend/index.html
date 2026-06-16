@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cortex — AI Data Intelligence OS</title>
+    <meta name="description" content="Cortex is a local-first AI Data Intelligence OS that maps codebases, databases, and documents into an interactive 3D spatial graph.">
+    <link rel="stylesheet" href="/static/style-v12.css?v=5">
+    <link rel="stylesheet" href="/static/studio.css?v=14">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Inline critical CSS for Settings Popup to bypass Safari cache -->
+    <style>
+        .chat-msg {
+            line-height: 1.7;
+            font-size: 1rem;
+            letter-spacing: 0.01em;
+            padding: 6px 0;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+        .chat-msg.user {
+            color: var(--text-primary);
+            font-weight: 400;
+            text-align: left;
+            background: rgba(255, 255, 255, 0.08);
+            align-self: flex-end;
+            padding: 12px 18px;
+            border-radius: 18px 18px 4px 18px;
+            max-width: 85%;
+            width: fit-content;
+            margin: 8px 0 16px auto; /* auto margin pushes to right */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        .chat-msg.ai {
+            color: rgba(236, 236, 236, 0.95);
+            font-size: 1rem;
+            text-align: left;
+            align-self: flex-start;
+            padding: 8px 0px 24px 0px;
+            width: 100%;
+        }
+        .chat-msg pre {
+            position: relative;
+            background: #111111;
+            padding: 16px;
+            padding-top: 48px;
+            border-radius: 12px;
+            overflow-x: auto;
+            margin: 16px 0;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            text-align: left;
+        }
+        .code-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 38px;
+            background: rgba(255, 255, 255, 0.04);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 10px 0 16px;
+            border-radius: 12px 12px 0 0;
+            z-index: 10;
+        }
+        .code-lang {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+        .code-actions {
+            display: flex;
+            gap: 4px;
+            opacity: 1;
+        }
+        .code-copy-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-secondary);
+            font-size: 0.62rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        [data-theme="light"] .chat-msg.user {
+            background: rgba(0, 0, 0, 0.05);
+            color: var(--text-primary);
+        }
+        [data-theme="light"] .chat-msg pre {
+            background: #111111 !important;
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+        [data-theme="light"] .code-header {
+            background: #1a1a1a;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        /* Block code lives inside a dark <pre>, so keep it light. */
+        [data-theme="light"] .chat-msg pre code {
+            color: #e5e7eb !important;
+        }
+        /* Inline code (not in a pre) needs dark text on a light tint. */
+        [data-theme="light"] .chat-msg :not(pre) > code {
+            color: #b91c1c !important;
+            background: rgba(0, 0, 0, 0.06);
+        }
+
+        .settings-popup-overlay {
+            position: fixed;
+            bottom: 60px;
+            left: 10px;
+            z-index: 10000;
+            pointer-events: auto;
+            display: block;
+        }
+        .settings-popup-overlay.hidden {
+            display: none !important;
+        }
+        .settings-popup-menu {
+            background: #1e1e1e;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            width: 260px;
+            padding: 8px 0;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+        }
+        .spm-item {
+            background: transparent;
+            border: none;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 10px 16px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 14px;
+            text-align: left;
+            gap: 12px;
+        }
+        .spm-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .spm-item.active {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+        }
+        .spm-icon {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+            opacity: 0.8;
+        }
+        .spm-label {
+            flex-grow: 1;
+        }
+        .spm-divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 6px 0;
+        }
+        .spm-section-label {
+            padding: 6px 16px;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #94a3b8;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
+    </style>
+    
+    <script src="https://unpkg.com/3d-force-graph"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    
+    <!-- Xterm.js CDNs (Must load BEFORE Monaco's AMD loader to avoid global scope conflict) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@4.13.0/css/xterm.css" />
+    <script src="https://cdn.jsdelivr.net/npm/xterm@4.13.0/lib/xterm.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.5.0/lib/xterm-addon-fit.js"></script>
+
+    <!-- Phase 7: Omni-Document Studio CDNs (Quill RTE, sanitizer, client-side exporters) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" />
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/turndown@7.2.0/dist/turndown.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- jsPDF .html() requires html2canvas; without it PDF export 404s on /html2canvas.js and hangs the UI. -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html-docx-js@0.3.1/dist/html-docx.js"></script>
+    <link rel="stylesheet" href="/static/richtext.css?v=3" />
+    <link rel="stylesheet" href="/static/docstudio.css?v=10" />
+    <link rel="stylesheet" href="/static/utilities.css?v=7" />
+
+    <!-- Monaco Editor CDNs -->
+    <script>var require = { paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' } };</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/editor/editor.main.nls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/editor/editor.main.js"></script>
+</head>
+<body>
+    <!-- OS Menu Trigger Area (invisible) -->
+    <div class="os-menu-trigger"></div>
+    
+    <!-- OS Menu Bar (populated by menubar.js) -->
+    <nav class="os-menu-bar" id="os-menu-bar">
+        <div class="os-menu-item title">Cortex IDE</div>
+    </nav>
+
+    <!-- 3D Graph Background Canvas (MUST be outside workspace-container to prevent click-blocking) -->
+    <div id="3d-canvas"></div>
+
+    <!-- Ambient overlay for text readability over 3D -->
+    <div class="ambient-overlay"></div>
+
+    <div class="workspace-container">
+
+        <!-- ===== Minimal Header ===== -->
+        <header class="control-panel" id="control-panel">
+            <div class="header-left">
+                <button id="sidebar-toggle-btn" class="sidebar-toggle-btn" title="Toggle Sidebar">
+                    <span class="hamburger-icon">
+                        <span></span><span></span><span></span>
+                    </span>
+                </button>
+                <div class="brand"><h1>CORTEX</h1></div>
+            </div>
+            
+            <div id="search-wrapper" class="search-wrapper hidden">
+                <input type="text" id="semantic-search" placeholder="🔍 Search global vector space...">
+                <button id="search-btn">Spotlight</button>
+            </div>
+
+            <div class="header-right">
+                <button id="studios-switcher" class="view-mode-btn" style="background: rgba(56, 189, 248, 0.15); border-color: var(--accent); color: var(--accent);">
+                    <span class="view-mode-icon">🗂️</span>
+                    <span class="view-mode-label">Switch to Studios ▾</span>
+                </button>
+                <button id="utilities-switcher" class="view-mode-btn" title="Notes, Tasks, Email & Calendar">
+                    <span class="view-mode-icon">🧰</span>
+                    <span class="view-mode-label">Utilities</span>
+                </button>
+                <button id="view-mode-btn" class="view-mode-btn">
+                    <span class="view-mode-icon" id="view-mode-icon">✦</span>
+                    <span class="view-mode-label" id="view-mode-label">Immersive</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- ===== Sidebar ===== -->
+        <aside id="left-panel" class="left-panel">
+            <!-- AI Provider Config -->
+            <section class="config-panel">
+                <h3>Intelligence Core</h3>
+                <select id="ai-provider-select">
+                    <optgroup label="Local Models">
+                        <option value="local:qwen2.5-coder:7b">Qwen 2.5 Coder (7B)</option>
+                    </optgroup>
+                    <optgroup label="MLX (Apple Silicon)">
+                        <option value="local-ml:custom">Custom HF Repo...</option>
+                    </optgroup>
+                    <optgroup label="Cloud Providers">
+                        <option value="gpt-4o">OpenAI · GPT-4o</option>
+                        <option value="claude-3-5-sonnet-latest">Anthropic · Claude 3.5 Sonnet</option>
+                        <option value="gemini/gemini-3-flash-preview">Google · Gemini 3 Flash (free-tier)</option>
+                        <option value="gemini/gemini-2.5-flash">Google · Gemini 2.5 Flash</option>
+                        <option value="groq/llama-3.3-70b-versatile">Groq · Llama 3.3 70B (groq.com)</option>
+                        <option value="xai/grok-2-latest">xAI · Grok 2 (x.ai)</option>
+                        <option value="cloud:custom">Custom Cloud (model/provider)...</option>
+                    </optgroup>
+                </select>
+                <input type="password" id="api-key-input" class="hidden" placeholder="Paste API Key...">
+                <input type="text" id="custom-ml-input" class="hidden" placeholder="e.g. ml-community/Llama-3.2-1B-Instruct-4bit" style="margin-top: 8px; width: 100%; box-sizing: border-box; background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary); padding: 10px; border-radius: var(--radius-md);">
+                <input type="text" id="custom-cloud-input" class="hidden" placeholder="Provider/model, e.g. gemini/gemini-3-flash-preview" style="margin-top: 8px; width: 100%; box-sizing: border-box; background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary); padding: 10px; border-radius: var(--radius-md);">
+                <small id="custom-cloud-hint" class="hidden" style="display:block; margin-top:6px; font-size:0.72rem; line-height:1.4; color: var(--text-secondary);">Any new model works — type <code>provider/model</code> (e.g. <code>gemini/gemini-4-flash</code>, <code>openai/gpt-5</code>, <code>anthropic/claude-opus-5</code>) and paste that provider's key.</small>
+            </section>
+
+            <!-- Agent Initialization (moved from header) -->
+            <section class="config-panel agent-init-panel">
+                <h3>Agent Workspace</h3>
+                <div class="init-controls">
+                    <div class="browse-row">
+                        <button id="browse-folder-btn" class="icon-btn-sm" title="Browse Folders">📁</button>
+                        <button id="browse-file-btn" class="icon-btn-sm" title="Browse Files">📄</button>
+                    </div>
+                    <input type="text" id="dir-input" placeholder="Point agent to folder or file...">
+                    <button id="process-btn">Initialize Agent</button>
+                </div>
+            </section>
+            
+            <!-- Project Workspaces -->
+            <section class="project-panel">
+                <div class="panel-header">
+                    <h3>Projects</h3>
+                    <div class="panel-actions">
+                        <button id="new-project-btn" title="New Project">➕</button>
+                    </div>
+                </div>
+                <div id="project-list"></div>
+            </section>
+
+            <!-- Chat History -->
+            <section class="history-panel">
+                <div class="history-header">
+                    <h3>Recent Chats</h3>
+                    <div class="history-actions">
+                        <button id="new-chat-btn" title="New Chat">➕</button>
+                        <button id="clear-history-btn" title="Delete All">🗑️</button>
+                    </div>
+                </div>
+                <div id="history-list"></div>
+            </section>
+
+            <!-- Model tools (Cookbook + Compare) — open as large modals -->
+            <div class="sidebar-tools-trigger">
+                <button id="open-cookbook-btn" class="sidebar-tool-btn" title="Model Cookbook — hardware-aware serving">🍳 <span>Cookbook</span></button>
+                <button id="open-compare-btn" class="sidebar-tool-btn" title="Model Compare — blind side-by-side">⚖️ <span>Compare</span></button>
+            </div>
+
+            <!-- Settings Gear Icon -->
+            <div class="sidebar-settings-trigger">
+                <button id="settings-btn" class="settings-gear-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <circle c="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                </button>
+            </div>
+        </aside>
+
+        <!-- ===== Main Chat Area ===== -->
+        <main class="chat-main" id="chat-interface">
+
+            <!-- Welcome State (Gemini-inspired) -->
+            <div class="welcome-state" id="welcome-state">
+                <div class="welcome-icon">✦</div>
+                <h2 class="welcome-greeting">What can I help you explore?</h2>
+                <p class="welcome-subtitle">Map codebases, analyze documents, or generate reports from your data</p>
+                <div class="welcome-suggestions">
+                    <button class="suggestion-chip" data-prompt="Analyze the architecture of this project">🏗️ Analyze architecture</button>
+                    <button class="suggestion-chip" data-prompt="Summarize all the files in this workspace">📋 Summarize workspace</button>
+                    <button class="suggestion-chip" data-prompt="Find potential code issues and improvements">🔍 Find improvements</button>
+                    <button class="suggestion-chip" data-prompt="Explain how the main components interact">🔗 Component interactions</button>
+                </div>
+            </div>
+
+            <!-- Chat Messages -->
+            <div id="chat-output" class="chat-display-window"></div>
+
+            <!-- Chat Input Area -->
+            <div class="chat-input-area" id="chat-input-area">
+                <div class="chat-input-container">
+                    <button id="attach-btn" title="Upload File to Memory" class="attach-btn">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+                    </button>
+                    <input type="file" id="file-upload" class="hidden">
+                    
+                    <textarea id="chat-input" rows="1" placeholder="Ask anything..."></textarea>
+                    
+                    <button id="chat-mic-btn" title="Hold to Dictate" class="chat-mic-btn">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                            <line 1="12" y1="19" 2="12" y2="22"></line>
+                        </svg>
+                    </button>
+                    
+                    <button id="chat-send-btn" title="Send message">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line 1="22" y1="2" 2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    </button>
+                </div>
+
+                <!-- Generation Mode Chips -->
+                <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
+                    <button class="deep-think-btn" id="deep-think-toggle" title="Route heavy tasks to the Async AirLLM Queue">
+                        <span class="dt-icon">🧠</span> <span class="dt-label">Deep Think Engine</span>
+                    </button>
+                    <div class="generation-mode-bar" id="generation-mode-bar" style="flex-grow: 1;">
+                    <button class="gen-chip" id="gen-web-btn" title="Toggle Web Search mode">
+                        <span class="gen-chip-icon">🌐</span> Web
+                    </button>
+                    <button class="gen-chip" id="gen-pdf-btn" title="Toggle PDF generation mode">
+                        <span class="gen-chip-icon">📄</span> PDF
+                    </button>
+                    <button class="gen-chip" id="gen-ppt-btn" title="Toggle PowerPoint generation mode">
+                        <span class="gen-chip-icon">📊</span> PPT
+                    </button>
+                    <button class="gen-chip" id="gen-csv-btn" title="Toggle CSV generation mode">
+                        <span class="gen-chip-icon">📋</span> CSV
+                    </button>
+                    <button class="gen-chip" id="gen-visualize-btn" title="Toggle Visualize mode — forecast charts &amp; predictions">
+                        <span class="gen-chip-icon">📈</span> Visualize
+                    </button>
+                    <button class="gen-chip" id="gen-json-btn" title="Export graph data as JSON">
+                        <span class="gen-chip-icon">📦</span> JSON
+                    </button>
+                    <div class="ppt-options-row hidden" id="ppt-options-row">
+                        <select id="ppt-slide-count" class="ppt-option-select" title="Number of slides">
+                            <option value="5">5 Slides</option>
+                            <option value="8">8 Slides</option>
+                            <option value="10" selected>10 Slides</option>
+                            <option value="15">15 Slides</option>
+                            <option value="20">20 Slides</option>
+                        </select>
+                        <select id="ppt-theme-select" class="ppt-option-select" title="PPT Theme">
+                            <option value="dark">🌙 Dark</option>
+                            <option value="corporate">🏢 Corporate</option>
+                            <option value="minimal">⚪ Minimal</option>
+                            <option value="neon">⚡ Neon</option>
+                            <option value="sunset">🌅 Sunset</option>
+                            <option value="custom">🎨 Custom...</option>
+                        </select>
+                        <input type="text" id="ppt-custom-theme" class="ppt-custom-input hidden" placeholder="e.g. Blue & gold, pastel pink...">
+                    </div>
+                    <div class="ppt-options-row hidden" id="csv-options-row">
+                        <input type="number" id="csv-col-count" class="ppt-custom-input" min="2" max="200" value="20" style="width:150px;" title="Number of columns" placeholder="Columns">
+                        <span style="font-size:0.78rem;color:var(--text-muted);align-self:center;">columns</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- ===== Studio IDE Area ===== -->
+        <main class="studio-main" id="studio-interface">
+            <!-- Left: Activity Bar -->
+            <div class="studio-activity-bar">
+                <button class="activity-btn active" data-action="activity-tab" data-target="explorer" title="Explorer">🗂️</button>
+                <button class="activity-btn" data-action="activity-tab" data-target="git" title="Source Control">🌿</button>
+                <button class="activity-btn" data-action="activity-tab" data-target="search" title="Search">🔍</button>
+                <div style="flex-grow: 1;"></div>
+                <button class="activity-btn" data-action="activity-tab" data-target="copilot" id="studio-copilot-btn" title="Toggle Copilot">✨</button>
+                <button class="activity-btn exit-btn" id="studio-exit-btn" title="Back to Chat">💬</button>
+            </div>
+
+            <!-- Left: File/Git Sidebar -->
+            <aside class="studio-sidebar" id="studio-sidebar">
+                <div class="studio-sidebar-tabs">
+                    <button class="studio-tab active" data-target="explorer">Explorer</button>
+                    <button class="studio-tab" data-target="git">Source Control</button>
+                    <button class="studio-tab" data-target="search">Search</button>
+                    <button class="studio-tab-close" onclick="toggleLeftSidebar()" title="Close Sidebar" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 0 10px; font-size: 1.2rem;">×</button>
+                </div>
+                <div class="studio-sidebar-content" id="studio-sidebar-content">
+                    <!-- Dynamic content filled by JS -->
+                </div>
+            </aside>
+
+            <!-- Vertical Resizer (Sidebar / Center) -->
+            <div class="studio-resizer-vertical" id="resizer-sidebar"></div>
+
+            <!-- Center: Editor & Terminal -->
+            <section class="studio-center">
+                <!-- Top Center: Monaco Editor & Global Search Bar (Workspace-Wide) -->
+                <div class="studio-editor-area">
+                    <div class="studio-editor-header">
+                        <div class="studio-editor-tabs" id="studio-editor-tabs">
+                            <!-- File tabs dynamically generated here -->
+                        </div>
+                        <div class="studio-editor-actions">
+                            <button onclick="runActiveFile()" title="Run / Play">▶</button>
+                            <button onclick="debugActiveFile()" title="Debug">🐛</button>
+                            <button onclick="if(window.editor){window.editor.getAction('editor.action.formatDocument').run();}" title="Format Document">📝</button>
+                            <button onclick="toggleSplitScreen()" title="Split Screen">◫</button>
+                            <button onclick="if(window.editor){window.editor.focus();window.editor.getAction('editor.action.quickCommand').run();}" title="Command Palette">⋯</button>
+                        </div>
+                    </div>
+                    <div class="studio-global-search hidden" id="studio-global-search">
+                        <input type="text" id="studio-search-input" placeholder="Search workspace...">
+                        <input type="text" id="studio-replace-input" placeholder="Replace with...">
+                        <button id="studio-replace-all-btn">Replace All</button>
+                    </div>
+                    <!-- IDE Welcome (VS Code-style) — shown when no file is open -->
+                    <div class="ide-welcome hidden" id="ide-welcome">
+                        <div class="ide-welcome-inner">
+                            <div class="ide-welcome-logo">✦</div>
+                            <h1 class="ide-welcome-title">Cortex IDE</h1>
+                            <p class="ide-welcome-sub">Your local-first AI coding workspace</p>
+                            <div class="ide-welcome-cols">
+                                <div class="ide-welcome-col">
+                                    <h3>Start</h3>
+                                    <a class="ide-welcome-link" onclick="window.newUntitledFile && newUntitledFile()">📄 New File…</a>
+                                    <a class="ide-welcome-link" onclick="promptWorkspace()">📂 Open Folder…</a>
+                                    <a class="ide-welcome-link" onclick="ideCloneRepo()">🌿 Clone Git Repository…</a>
+                                </div>
+                                <div class="ide-welcome-col">
+                                    <h3>Recent</h3>
+                                    <div id="ide-welcome-recent"><span class="ide-welcome-empty">No recent folders yet.</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- The main Monaco Containers -->
+                    <div style="display: flex; flex: 1; min-height: 0; flex-direction: row; width: 100%;">
+                        <div class="monaco-container" id="monaco-editor-container" style="flex: 1;"></div>
+                        <div class="monaco-container hidden" id="monaco-editor-container-2" style="flex: 1; border-left: 1px solid var(--glass-border);"></div>
+                        <!-- Phase 7: Omni-Document rich-text editor (Quill). Hidden until a .md/.txt/.docx tab is active. -->
+                        <div class="richtext-host hidden" id="richtext-container">
+                            <div id="richtext-toolbar"></div>
+                            <div id="richtext-editor"></div>
+                            <div id="richtext-ai-overlay" class="hidden"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Center: Resizer & Terminal/Ports/Debugger -->
+                <div class="studio-resizer-horizontal" id="studio-resizer-h"></div>
+                <div class="studio-bottom-panel">
+                    <div class="studio-bottom-tabs">
+                        <button class="studio-tab" data-target="problems">Problems</button>
+                        <button class="studio-tab" data-target="output">Output</button>
+                        <button class="studio-tab" data-target="debug-console">Debug Console</button>
+                        <button class="studio-tab active" data-target="terminal">Terminal</button>
+                        <button class="studio-tab" data-target="ports">Ports</button>
+                        <div style="flex-grow: 1;"></div>
+                        
+                        <!-- Terminal Right Controls -->
+                        <div class="terminal-right-controls" style="display: flex; align-items: center; gap: 8px;">
+                            <span id="term-btn-new" title="New Terminal" onclick="newTerminalSession()" style="font-size: 1rem; cursor: pointer; color: var(--text-secondary);">+</span>
+                            <span id="term-btn-switch" title="Switch Terminal" onclick="showTerminalSwitcher()" style="font-size: 1rem; cursor: pointer; color: var(--text-secondary);">⌄</span>
+                            <span id="term-btn-more" title="Terminal Actions" onclick="showTerminalActionsMenu()" style="font-size: 1rem; cursor: pointer; color: var(--text-secondary);">...</span>
+                            <span id="term-btn-split" title="Split Terminal" onclick="splitTerminalSession()" style="font-size: 1rem; cursor: pointer; color: var(--text-secondary);">[ ]</span>
+                            <select style="background: transparent; border: none; color: #fbbf24; font-size: 0.85rem; outline: none; cursor: pointer;">
+                                <option>zsh</option>
+                                <option>python...</option>
+                            </select>
+                            <span id="term-btn-problems" title="Show Problems" onclick="document.querySelector('.studio-bottom-tabs .studio-tab[data-target=problems]')?.click()" style="color: #fbbf24; font-size: 0.85rem; margin-right: 10px; cursor: pointer;">⚠️</span>
+                            <button class="studio-tab-close" onclick="toggleBottomPanel()" title="Minimize Panel" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 0 5px; font-size: 1.2rem;">×</button>
+                        </div>
+                    </div>
+                    <div class="studio-bottom-content">
+                        <div id="terminal-container" class="studio-panel-content active"></div>
+                        <div id="ports-container" class="studio-panel-content hidden">
+                            <!-- Ports List -->
+                            <ul id="ports-list"></ul>
+                            <button id="refresh-ports-btn">Refresh Ports</button>
+                        </div>
+                        <!-- Debug Console (populated by debugger.js) -->
+                        <div id="debug-console-container" class="studio-panel-content hidden"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Vertical Resizer (Center / Copilot) -->
+            <div class="studio-resizer-vertical" id="resizer-copilot"></div>
+
+            <!-- Right: Copilot Sidebar -->
+            <aside class="copilot-sidebar" id="copilot-sidebar">
+                <div class="copilot-header">
+                    <span class="copilot-title">Agent</span>
+                    <button class="studio-tab-close" onclick="toggleCopilotSidebar()" title="Close Copilot" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 0 5px; font-size: 1.2rem; margin-left: auto;">×</button>
+                </div>
+                
+                <div class="copilot-chat-history" id="copilot-chat-history">
+                    <!-- AI Chat Messages go here -->
+                </div>
+
+                <div class="copilot-toolbar" id="copilot-toolbar">
+                    <div class="toolbar-top">
+                        <select id="copilot-model-select">
+                            <option value="local:llama3.2:latest">Llama 3.2</option>
+                            <option value="local:llama3.1:8b">Llama 3.1 (8B)</option>
+                            <option value="local:qwen3.6:27b-ml">Qwen 27B (MLX)</option>
+                            <option value="gemini/gemini-1.5-pro">Gemini Pro</option>
+                        </select>
+                        <div id="model-loading-indicator" class="hidden">Loading...</div>
+                    </div>
+                    <div class="toolbar-input-area">
+                        <textarea id="copilot-input" placeholder="Ask Copilot..."></textarea>
+                        
+                        <div class="toolbar-bottom-row">
+                            <div class="toolbar-actions-left">
+                                <button id="copilot-attach-btn" title="Attach Context">➕</button>
+                                <input type="file" id="copilot-file-upload" class="hidden">
+                                <button id="copilot-mic-btn" title="Voice Input">🎙️</button>
+                                <button id="copilot-mode-btn" title="Agent mode — click to change">⏵⏵ Ask permission</button>
+                            </div>
+                            <button id="copilot-send-btn">Send</button>
+                        </div>
+                    </div>
+                    <div id="jit-tokenizer-warning" class="hidden" style="color: var(--warning); font-size: 0.7rem;"></div>
+                </div>
+            </aside>
+        </main>
+
+        <!-- ===== Documents Editor surface (Phase 7+, docstudio.js) ===== -->
+        <main class="document-main" id="document-interface">
+            <div class="doc-topbar">
+                <button class="doc-back" onclick="switchSurface('chat')" title="Back to Chat">← Chat</button>
+                <input class="doc-title-input" id="doc-title" value="Untitled.md" spellcheck="false" />
+                <div class="doc-topbar-actions" id="doc-topbar-actions"></div>
+            </div>
+            <div class="doc-editor-wrap">
+                <div id="docstudio-editor"></div>
+                <div id="docstudio-ghost" class="docstudio-ghost hidden"></div>
+            </div>
+            <div class="doc-statusbar" id="doc-statusbar"></div>
+        </main>
+
+        <!-- ===== Deep Research surface (docstudio.js) ===== -->
+        <main class="research-main" id="research-interface">
+            <div class="research-screen" id="research-screen">
+                <div class="research-hero">
+                    <button class="doc-back research-back" onclick="switchSurface('chat')" title="Back to Chat">← Chat</button>
+                    <h1>🔎 Deep Research</h1>
+                    <p class="research-sub">Ask a question — the agent searches the web, reads the sources, analyzes them, and writes you a structured report you can edit and export.</p>
+                    <input id="research-topic" class="research-input" placeholder="Report title (optional) — e.g. “Local LLM runtimes on Apple Silicon”" />
+                    <textarea id="research-query" rows="3" placeholder="What to investigate (the full question / instructions). This drives the web search — it won't become the title."></textarea>
+                    <div class="research-controls">
+                        <label>Sources to read
+                            <select id="research-depth">
+                                <option value="3">3 (fast)</option>
+                                <option value="5" selected>5 (balanced)</option>
+                                <option value="8">8 (thorough)</option>
+                            </select>
+                        </label>
+                        <button id="research-run" class="research-run-btn">Run Research →</button>
+                    </div>
+                    <div class="research-recent" id="research-recent"></div>
+                </div>
+            </div>
+        </main>
+
+        <!-- ===== Utilities Studio surface (Phase 8, utilities.js) ===== -->
+        <main class="utilities-main" id="utilities-interface">
+            <div class="util-topbar">
+                <button class="doc-back" onclick="switchSurface('chat')" title="Back to Chat">← Chat</button>
+                <h1 class="util-title">🧰 Utilities Studio</h1>
+            </div>
+            <div class="util-body">
+                <nav class="util-rail" id="util-rail">
+                    <button class="util-tab active" data-util="tasks">🗒️<span>Notes &amp; Tasks</span></button>
+                    <button class="util-tab" data-util="comms">✉️<span>Email &amp; Calendar</span></button>
+                </nav>
+                <section class="util-canvas" id="util-canvas-tasks" data-canvas="tasks"></section>
+                <section class="util-canvas hidden" id="util-canvas-comms" data-canvas="comms"></section>
+            </div>
+        </main>
+    </div>
+
+    <!-- ===== Model tool modals (Phase 8.1): Cookbook + Compare ===== -->
+    <div id="cookbook-modal" class="tool-modal-overlay hidden">
+        <div class="tool-modal">
+            <div class="tool-modal-header">
+                <h2>🍳 Model Cookbook</h2>
+                <button class="tool-modal-close" data-close-tool="cookbook-modal">×</button>
+            </div>
+            <div class="tool-modal-body" id="cookbook-modal-body"></div>
+        </div>
+    </div>
+    <div id="compare-modal" class="tool-modal-overlay hidden">
+        <div class="tool-modal">
+            <div class="tool-modal-header">
+                <h2>⚖️ Model Compare</h2>
+                <button class="tool-modal-close" data-close-tool="compare-modal">×</button>
+            </div>
+            <div class="tool-modal-body" id="compare-modal-body"></div>
+        </div>
+    </div>
+
+    <!-- ===== Unified Brain Profile Settings Modal ===== -->
+    <div id="settings-modal" class="settings-modal-overlay hidden">
+        <div class="settings-modal-content">
+            <div class="settings-modal-header">
+                <h2>Brain Profile Settings</h2>
+                <button id="settings-close-btn" class="settings-close-btn">×</button>
+            </div>
+            
+            <div class="settings-modal-body">
+                <!-- Sidebar Tabs -->
+                <div class="settings-tabs">
+                    <button class="settings-tab-btn active" data-tab="memory-ledger">Memory Ledger</button>
+                    <button class="settings-tab-btn" data-tab="import-vault">Import Vault</button>
+                    <button class="settings-tab-btn" data-tab="cache-manager">Cache & Index</button>
+                    <button class="settings-tab-btn" data-tab="view-mode">Appearance</button>
+                </div>
+                
+                <!-- Content Area -->
+                <div class="settings-tab-content">
+                    
+                    <!-- Memory Ledger Tab -->
+                    <div id="tab-memory-ledger" class="tab-pane active">
+                        <h3>The Memory Ledger</h3>
+                        <p class="tab-desc">A persistent graph of facts, persona traits, and operational constraints extracted from your chats.</p>
+                        
+                        <div class="memory-add-console">
+                            <input type="text" id="manual-memory-input" placeholder="Manually push a fact (e.g., 'I prefer Python over JavaScript')...">
+                            <button id="manual-memory-add-btn">Add Memory</button>
+                        </div>
+                        
+                        <div class="memory-table-container">
+                            <table class="memory-table" id="memory-table">
+                                <thead>
+                                    <tr>
+                                        <th>Fact</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Populated dynamically via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="memory-capsule-actions">
+                            <button id="memory-export-btn" class="capsule-btn">Export Capsule</button>
+                        </div>
+                    </div>
+
+                    <!-- Import Vault Tab -->
+                    <div id="tab-import-vault" class="tab-pane hidden">
+                        <h3>Import memory to Cortex</h3>
+                        <p class="tab-desc">Migrate your entire persona from another AI platform to Cortex instantly.</p>
+                        
+                        <!-- Step 1: Export Prompt -->
+                        <div class="import-step-container">
+                            <div class="import-step-header">
+                                <span class="step-badge">1</span>
+                                <span>Copy this prompt into a chat with your other AI provider</span>
+                            </div>
+                            <div class="import-prompt-box">
+                                <pre id="import-prompt-display">Loading prompt...</pre>
+                                <button id="copy-prompt-btn" class="floating-btn">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-copy"><rect ="9" y="9" width="13" height="13" r="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                    <span class="btn-text">Copy</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Paste Vault -->
+                        <div class="import-step-container">
+                            <div class="import-step-header">
+                                <span class="step-badge">2</span>
+                                <span>Paste the response here</span>
+                            </div>
+                            <div class="import-input-box">
+                                <textarea id="import-memory-textarea" placeholder="Paste your info here..."></textarea>
+                                <button id="submit-import-btn" class="floating-btn" disabled>Add memory</button>
+                            </div>
+                        </div>
+                    </div>    
+                    
+                    <!-- Cache & Index Manager Tab -->
+                    <div id="tab-cache-manager" class="tab-pane hidden">
+                        <h3>Cache & Index Manager</h3>
+                        <p class="tab-desc">Monitor local resource usage and vector database size.</p>
+                        
+                        <div class="stats-container" id="system-stats-container">
+                            <div class="stat-card">
+                                <div class="stat-value" id="stat-sqlite">0 MB</div>
+                                <div class="stat-label">SQLite Cache Size</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="stat-chroma">0 MB</div>
+                                <div class="stat-label">GraphRAG Index Size</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="stat-nodes">0</div>
+                                <div class="stat-label">Memory Vectors (Nodes)</div>
+                            </div>
+                        </div>
+                        
+                        <button id="purge-index-btn" class="danger-btn">Purge Regional Indexes</button>
+                    </div>
+                    
+                    <!-- Appearance Tab (Moved View Mode here) -->
+                    <div id="tab-view-mode" class="tab-pane hidden">
+                        <h3>Appearance & View Mode</h3>
+                        
+                        <div class="view-mode-options">
+                            <button class="spm-item" id="theme-toggle-btn">
+                                <span class="spm-icon">☀️</span>
+                                <span class="spm-label" id="theme-label-text">Toggle Light Mode</span>
+                            </button>
+                            <div class="spm-divider" style="margin:16px 0;"></div>
+                            <button class="spm-item settings-view-btn active" data-mode="immersive">
+                                <span class="spm-icon">✦</span>
+                                <span class="spm-label">Immersive (Default)</span>
+                            </button>
+                            <button class="spm-item settings-view-btn" data-mode="graph-only">
+                                <span class="spm-icon">🧠</span>
+                                <span class="spm-label">Graph Only</span>
+                            </button>
+                            <button class="spm-item settings-view-btn" data-mode="chat-only">
+                                <span class="spm-icon">💬</span>
+                                <span class="spm-label">Chat Only</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Frontend Logic -->
+    <script src="/static/app-v12.js?v=23"></script>
+    <script src="/static/studio.js?v=24"></script>
+    <script src="/static/debugger.js?v=1"></script>
+    <script src="/static/richtext.js?v=5"></script>
+    <script src="/static/docstudio.js?v=4"></script>
+    <script src="/static/utilities.js?v=8"></script>
+    <script src="/static/menubar.js?v=5"></script>
+</body>
+</html>

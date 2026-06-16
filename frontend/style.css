@@ -1,0 +1,30 @@
+
+/* ---- Deep Think Toggle ---- */
+.deep-think-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #1e1b4b, #312e81);
+    border: 1px solid #4f46e5;
+    color: #e0e7ff;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 10px rgba(79, 70, 229, 0.2), inset 0 0 10px rgba(79, 70, 229, 0.1);
+    flex-shrink: 0;
+}
+.deep-think-btn:hover {
+    box-shadow: 0 0 15px rgba(79, 70, 229, 0.4), inset 0 0 15px rgba(79, 70, 229, 0.3);
+    transform: translateY(-1px);
+}
+.deep-think-btn.active {
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    color: #ffffff;
+    border-color: #818cf8;
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.6), inset 0 0 10px rgba(255,255,255,0.2);
+}
+.dt-icon { font-size: 1.1rem; }
+

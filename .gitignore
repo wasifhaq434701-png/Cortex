@@ -1,0 +1,101 @@
+# ==========================================================================
+# Cortex IDE — .gitignore
+# Keeps private user data, secrets, build artifacts, and OS cruft out of git.
+# ==========================================================================
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.Python
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+.conda/
+
+# ---- Private user data & databases (SECURITY — never commit) ----
+# GraphRAG vector index, diff cache, and the mem0 Memory Ledger are generated
+# at runtime and contain the user's ingested files + personal facts.
+backend/storage/
+backend/data/
+*.db
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+mem0*.db
+chroma_db/
+mem0_chroma/
+# Honor a custom storage location too:
+# (set via MINDPALACE_STORAGE_DIR)
+
+# ---- Secrets (SECURITY — defensive; the app keeps keys in-app, not on disk) ----
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+secrets.json
+credentials.json
+*api_key*
+*apikey*
+
+# ---- Logs ----
+*.log
+uvicorn.log
+
+# ---- Packaging / build output ----
+build/
+dist/
+*.spec.bak
+# Tauri / Rust
+src-tauri/target/
+src-tauri/gen/
+src-tauri/binaries/
+# Keep source: cortex_backend.spec, src-tauri/Cargo.lock, tauri.conf.json
+
+# ---- Vendored wheels at the repo root (reproducible from requirements.txt) ----
+/*.whl
+
+# ---- whisper.cpp: vendored SOURCE is committed; ignore its build artifacts ----
+backend/workers/whisper.cpp/build/
+backend/workers/whisper.cpp/**/*.o
+backend/workers/whisper.cpp/**/*.a
+backend/workers/whisper.cpp/models/*.bin
+backend/workers/whisper.cpp/models/*.mlmodelc
+
+# ---- Node (defensive; the frontend ships static, no build step today) ----
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# ---- OS cruft ----
+.DS_Store
+.DS_Store?
+.AppleDouble
+.LSOverride
+._*
+Thumbs.db
+Desktop.ini
+
+# ---- Editors / IDEs ----
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ---- Dev scratch / ad-hoc test files ----
+/test.py
+/test_xterm.html
+/check_xterm.html
+/frontend/test.html
